@@ -51,6 +51,10 @@ jobs:
          image: '$REGISTRY/spring-petclinic-cloud-visits-service:$IMAGE_TAG'
          fail-build: false
          severity-cutoff: critical
+         output-format: json
+    - run: |
+          ls -lart
+          pwd
     - name: upload Anchore scan SARIF report - visit-service
       uses: github/codeql-action/upload-sarif@v2
       with:
