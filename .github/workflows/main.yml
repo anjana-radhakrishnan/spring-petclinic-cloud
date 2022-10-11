@@ -51,11 +51,11 @@ jobs:
          image: '$REGISTRY/spring-petclinic-cloud-visits-service:$IMAGE_TAG'
          fail-build: false
          severity-cutoff: critical
-    - name: upload Anchore scan SARIF report - visit-service
-      uses: github/codeql-action/upload-sarif@v2
+    - name: upload Anchore scan SARIF report - visits-service
+      uses: actions/upload-artifact@v3
       with:
-          sarif_file: ${{ steps.scan-visit-service.outputs.sarif }}
-
+        name: scan-visit-service
+        path: ./results.sarif
     - name: Run docker vulnerability scanner
       uses: anchore/scan-action@v3
       id: scan-vets-service
@@ -67,10 +67,10 @@ jobs:
          fail-build: false
          severity-cutoff: critical  
     - name: upload Anchore scan SARIF report - vets-service
-      uses: github/codeql-action/upload-sarif@v2
+      uses: actions/upload-artifact@v3
       with:
-          sarif_file: ${{ steps.scan-vets-service.outputs.sarif }}   
-
+        name: scan-vets-service
+        path: ./results.sarif
     - name: Run docker vulnerability scanner
       uses: anchore/scan-action@v3
       id: scan-customer-service
@@ -81,10 +81,11 @@ jobs:
          image: '$REGISTRY/spring-petclinic-cloud-customers-service:$IMAGE_TAG'
          fail-build: false
          severity-cutoff: critical
-    - name: upload Anchore scan SARIF report - customers-service
-      uses: github/codeql-action/upload-sarif@v2
+    - name: upload Anchore scan SARIF report - customer-service
+      uses: actions/upload-artifact@v3
       with:
-          sarif_file: ${{ steps.scan-customers-service.outputs.sarif }}   
+        name: scan-customer-service
+        path: ./results.sarif
 
     - name: Run docker vulnerability scanner
       uses: anchore/scan-action@v3
@@ -96,10 +97,11 @@ jobs:
          image: '$REGISTRY/spring-petclinic-cloud-api-gateway:$IMAGE_TAG'
          fail-build: false
          severity-cutoff: critical 
-    - name: upload Anchore scan SARIF report - api-service
-      uses: github/codeql-action/upload-sarif@v2
+    - name: upload Anchore scan SARIF report - api-gateway
+      uses: actions/upload-artifact@v3
       with:
-          sarif_file: ${{ steps.scan-api-service.outputs.sarif }}   
+        name: scan-api-gateway
+        path: ./results.sarif  
 
     - name: Push Image to ECR. #pushing image to ECR
       env:
