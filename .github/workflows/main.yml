@@ -137,7 +137,7 @@ jobs:
     #     git commit -m "updated image tag to ${{ github.sha }} "
     #     git push origin feature/github-actions
 
-  Security-Scan/Test:
+  Security-Test:
     needs: [CD]
     name: Security-Scan
     runs-on: ubuntu-20.04
