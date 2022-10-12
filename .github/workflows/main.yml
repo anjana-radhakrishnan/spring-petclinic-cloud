@@ -174,3 +174,4 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}  #  When you use the repository's GITHUB_TOKEN to perform tasks, events triggered by the GITHUB_TOKEN will not create a new workflow run.
         docker_name: 'owasp/zap2docker-stable'  # The name of the docker file to be executed. By default the action runs the stable version of ZAP. 
         target: 'https://cloudifyops.com/'
+        fail_action: false
