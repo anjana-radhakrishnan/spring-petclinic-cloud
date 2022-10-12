@@ -144,33 +144,33 @@ jobs:
     steps:
     - name: code checkout
       uses: actions/checkout@v2
-    - name: Run JMeter Action on a test
-      uses: rbhadti94/apache-jmeter-action@v0.5.0
-      with:
-          testFilePath: jmeter.jmx
-          outputReportsFolder: output/
-          args: "--loglevel INFO"
+    # - name: Run JMeter Action on a test
+    #   uses: rbhadti94/apache-jmeter-action@v0.5.0
+    #   with:
+    #       testFilePath: jmeter.jmx
+    #       outputReportsFolder: output/
+    #       args: "--loglevel INFO"
           
-    - name: PerfAction for JMeter
-      uses: QAInsights/PerfAction@v3.1
-      with:
-    # jmeter test plan to execute
-         test-plan-path: jmeter.jmx
+    # - name: PerfAction for JMeter
+    #   uses: QAInsights/PerfAction@v3.1
+    #   with:
+    # # jmeter test plan to execute
+    #      test-plan-path: jmeter.jmx
           
-    - uses: actions/upload-artifact@v1
-      with:
-         name: jmeter-test-results
-         path: output/
+    # - uses: actions/upload-artifact@v1
+    #   with:
+    #      name: jmeter-test-results
+    #      path: output/
          
-    - name: Upload Results
-      uses: actions/upload-artifact@v2
-      with:
-         name: jmeter-results-jtl
-         path: result.jtl 
+    # - name: Upload Results
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #      name: jmeter-results-jtl
+    #      path: result.jtl 
 
     - name: ZAP Baseline Scan
       uses: zaproxy/action-baseline@v0.7.0  # Marketplace actions
       with:
         token: ${{ secrets.GITHUB_TOKEN }}  #  When you use the repository's GITHUB_TOKEN to perform tasks, events triggered by the GITHUB_TOKEN will not create a new workflow run.
         docker_name: 'owasp/zap2docker-stable'  # The name of the docker file to be executed. By default the action runs the stable version of ZAP. 
-        target: 'https://jenkins.cloudifyops.com'
+        target: 'https://cloudifyops.com/'
