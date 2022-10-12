@@ -112,3 +112,23 @@ jobs:
         docker push -a $REGISTRY/spring-petclinic-cloud-vets-service
         docker push -a $REGISTRY/spring-petclinic-cloud-customers-service
         docker push -a $REGISTRY/spring-petclinic-cloud-api-gateway
+        
+    - name: build docker image
+      run: docker build -t jmeter .
+    - name: run jmeter 
+      run: |
+        sudo docker run --rm -v `pwd`:/jmeter jmeter jmeter  --nongui -t  /jmeter/jmeter.jmx -l /jmeter/jmeter.jtl
+        docker run --rm -v `pwd`:/jmeter jmeter jmeter -n -t /jmeter/jmeter.jmx -l /jmeter/jmeter.csv -e -o /jmeter/output
+        zip -r output.zip output
+        ls -lart
+    - uses: actions/upload-artifact@v1
+      with:
+        name: jmeter-test-results
+        path: output/
+        
+    - name: Upload Results
+      uses: actions/upload-artifact@v2
+      with:
+        name: jmeter-results-jtl
+        path: jmeter.jtl
+    
