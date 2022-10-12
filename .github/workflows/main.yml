@@ -85,7 +85,140 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: scan-customer-service
+        path: ./results.sarifname: ci-cd petclinic
+on:
+  push:
+    branches: [ feature/github-actions ]
+  pull_request:
+    branches: [ feature/github-actions ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: code checkout
+      uses: actions/checkout@v2
+    - name: Set up JDK 11`
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+        cache: maven
+    - name: Build with Maven
+      run: mvn test
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build and tag docker image
+      env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}  
+      run: |
+        mvn spring-boot:build-image -Pk8s -DREPOSITORY_PREFIX=$REGISTRY   
+        docker tag $REGISTRY/spring-petclinic-cloud-visits-service $REGISTRY/spring-petclinic-cloud-visits-service:$IMAGE_TAG
+        docker tag $REGISTRY/spring-petclinic-cloud-vets-service $REGISTRY/spring-petclinic-cloud-vets-service:$IMAGE_TAG
+        docker tag $REGISTRY/spring-petclinic-cloud-customers-service $REGISTRY/spring-petclinic-cloud-customers-service:$IMAGE_TAG
+        docker tag $REGISTRY/spring-petclinic-cloud-admin-server $REGISTRY/spring-petclinic-cloud-api-gateway:$IMAGE_TAG
+    - name: Run docker vulnerability scanner
+      uses: anchore/scan-action@v3
+      id: scan-visit-service
+      env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }} 
+      with:
+         image: '$REGISTRY/spring-petclinic-cloud-visits-service:$IMAGE_TAG'
+         fail-build: false
+         severity-cutoff: critical
+    - name: upload Anchore scan SARIF report - visits-service
+      uses: actions/upload-artifact@v3
+      with:
+        name: scan-visit-service
         path: ./results.sarif
+    - name: Run docker vulnerability scanner
+      uses: anchore/scan-action@v3
+      id: scan-vets-service
+      env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }} 
+      with:
+         image: '$REGISTRY/spring-petclinic-cloud-vets-service:$IMAGE_TAG'
+         fail-build: false
+         severity-cutoff: critical  
+    - name: upload Anchore scan SARIF report - vets-service
+      uses: actions/upload-artifact@v3
+      with:
+        name: scan-vets-service
+        path: ./results.sarif
+    - name: Run docker vulnerability scanner
+      uses: anchore/scan-action@v3
+      id: scan-customer-service
+      env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }} 
+      with:
+         image: '$REGISTRY/spring-petclinic-cloud-customers-service:$IMAGE_TAG'
+         fail-build: false
+         severity-cutoff: critical
+    - name: upload Anchore scan SARIF report - customer-service
+      uses: actions/upload-artifact@v3
+      with:
+        name: scan-customer-service
+        path: ./results.sarif
+
+    - name: Run docker vulnerability scanner
+      uses: anchore/scan-action@v3
+      id: scan-api-service
+      env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }} 
+      with:
+         image: '$REGISTRY/spring-petclinic-cloud-api-gateway:$IMAGE_TAG'
+         fail-build: false
+         severity-cutoff: critical 
+    - name: upload Anchore scan SARIF report - api-gateway
+      uses: actions/upload-artifact@v3
+      with:
+        name: scan-api-gateway
+        path: ./results.sarif  
+
+    - name: Push Image to ECR. #pushing image to ECR
+      env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker push -a $REGISTRY/spring-petclinic-cloud-visits-service
+        docker push -a $REGISTRY/spring-petclinic-cloud-vets-service
+        docker push -a $REGISTRY/spring-petclinic-cloud-customers-service
+        docker push -a $REGISTRY/spring-petclinic-cloud-api-gateway
+        
+    - name: build docker image
+      run: docker build -t jmeter .
+    - name: run jmeter 
+      run: |
+        sudo docker run --rm -v `pwd`:/jmeter jmeter jmeter  --nongui -t  /jmeter/jmeter.jmx -l /jmeter/jmeter.jtl
+        docker run --rm -v `pwd`:/jmeter jmeter jmeter -n -t /jmeter/jmeter.jmx -l /jmeter/jmeter.csv -e -o /jmeter/output
+        zip -r output.zip output
+        ls -lart
+    - uses: actions/upload-artifact@v1
+      with:
+        name: jmeter-test-results
+        path: output/
+        
+    - name: Upload Results
+      uses: actions/upload-artifact@v2
+      with:
+        name: jmeter-results-jtl
+        path: jmeter.jtl
+    
 
     - name: Run docker vulnerability scanner
       uses: anchore/scan-action@v3
