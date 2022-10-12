@@ -121,24 +121,30 @@ jobs:
         target: 'https://www.zaproxy.org' 
           
 
-    - name: build docker image
-      run: docker build -t jmeter .
-    - name: run jmeter 
-      run: |
-        sudo docker run --rm -v `pwd`:/jmeter jmeter jmeter  --nongui -t  /jmeter/jmeter.jmx -l /jmeter/jmeter.jtl
-        docker run --rm -v `pwd`:/jmeter jmeter jmeter -n -t /jmeter/jmeter.jmx -l /jmeter/jmeter.csv -e -o /jmeter/output
-        zip -r output.zip output
-        ls -lart
+    - name: Run JMeter Action on a test
+      uses: rbhadti94/apache-jmeter-action@v0.5.0
+      with:
+          testFilePath: jmeter.jmx
+          outputReportsFolder: output/
+          args: "--loglevel INFO"
+          
+    - name: PerfAction for JMeter
+      uses: QAInsights/PerfAction@v3.1
+      with:
+    # jmeter test plan to execute
+         test-plan-path: jmeter.jmx
+          
     - uses: actions/upload-artifact@v1
       with:
-        name: jmeter-test-results
-        path: output/
-        
+         name: jmeter-test-results
+         path: output/
+         
     - name: Upload Results
       uses: actions/upload-artifact@v2
       with:
-        name: jmeter-results-jtl
-        path: jmeter.jtl
+         name: jmeter-results-jtl
+         path: result.jtl 
+
 
    
     
