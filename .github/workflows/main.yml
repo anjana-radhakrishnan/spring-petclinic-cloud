@@ -1,4 +1,8 @@
 name: ci-cd petclinic
+env: 
+  GIT_USER_NAME: ANJANA
+  GIT_USER_EMAIL: anjanaradhakrish@gmail.com
+  GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 on:
   push:
     branches: [ feature/github-actions ]
@@ -6,10 +10,8 @@ on:
     branches: [ feature/github-actions ]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
+  CI:
+    runs-on: ubuntu-20.04
     steps:
     - name: code checkout
       uses: actions/checkout@v2
@@ -30,7 +32,6 @@ jobs:
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
-
     - name: Build and tag docker image
       env:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -112,9 +113,35 @@ jobs:
         docker push -a $REGISTRY/spring-petclinic-cloud-vets-service
         docker push -a $REGISTRY/spring-petclinic-cloud-customers-service
         docker push -a $REGISTRY/spring-petclinic-cloud-api-gateway
- 
-          
+  CD:
+    needs: [CI]
+    name: CD
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Install git. #installing git
+      run: sudo apt-get install git
+    - name: Set git config # Set global git configuration.
+      run: |
+          git config --global credential.helper cache
+          git config --global user.email ${GIT_USER_EMAIL}
+          git config --global user.name ${GIT_USER_NAME} 
+    - name: Checkout GitOps repository and update image tag # Checkout the GitOps repository and updating the image tag
+      run: |
+          git clone -b feature/github-actions https://${GIT_USER_NAME}:${GIT_TOKEN}@gitlab.cloudifyops.com/devops-toolset/spring-petclinic-cloud-k8s-config.git
+          cd spring-petclinic-cloud-k8s-config/
+          sed -i 's/\/spring-petclinic-cloud-api-gateway:.*/\/spring-petclinic-cloud-api-gateway:${{ github.sha }}/' api-gateway-deployment.yaml
+						sed -i 's/\/spring-petclinic-cloud-customers-service:.*/\/spring-petclinic-cloud-customers-service:${{ github.sha }}/' customers-service-deployment.yaml
+						sed -i 's/\/spring-petclinic-cloud-vets-service:.*/\/spring-petclinic-cloud-vets-service:${{ github.sha }}/' vets-service-deployment.yaml
+						sed -i 's/\/spring-petclinic-cloud-visits-service:.*/\/spring-petclinic-cloud-visits-service:${{ github.sha }}/' visits-service-deployment.yaml
+          git add .
+          git commit -m "updated image tag to ${{ github.sha }} "
+          git push origin feature/github-actions
 
+  Security-Scan:
+    needs: [CD]
+    name: Security-Scan
+    runs-on: ubuntu-20.04
+    steps:
     - name: Run JMeter Action on a test
       uses: rbhadti94/apache-jmeter-action@v0.5.0
       with:
@@ -144,9 +171,4 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}  #  When you use the repository's GITHUB_TOKEN to perform tasks, events triggered by the GITHUB_TOKEN will not create a new workflow run.
         docker_name: 'owasp/zap2docker-stable'  # The name of the docker file to be executed. By default the action runs the stable version of ZAP. 
-        target: 'https://www.zaproxy.org'
-
-
-
-   
-    
+        target: 'https://jenkins.cloudifyops.com'
