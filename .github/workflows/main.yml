@@ -2,7 +2,7 @@ name: ci-cd petclinic
 env: 
   GIT_USER_NAME: ANJANA
   GIT_USER_EMAIL: anjanaradhakrish@gmail.com
-  GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GIT_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
 on:
   push:
     branches: [ feature/github-actions ]
@@ -127,7 +127,7 @@ jobs:
           git config --global user.name ${GIT_USER_NAME} 
     - name: Checkout GitOps repository and update image tag # Checkout the GitOps repository and updating the image tag
       run: |
-        git clone -b feature/github-actions https://${GIT_USER_NAME}:${GIT_TOKEN}@gitlab.cloudifyops.com/devops-toolset/spring-petclinic-cloud-k8s-config.git
+        git clone -b feature/github-actions https://${GIT_USER_NAME}:${GIT_TOKEN}@github.com/anjana-radhakrishnan/spring-petclinic-cloud-k8s-config.git
         cd spring-petclinic-cloud-k8s-config/
         sed -i 's/\/spring-petclinic-cloud-api-gateway:.*/\/spring-petclinic-cloud-api-gateway:${{ github.sha }}/' api-gateway-deployment.yaml
         sed -i 's/\/spring-petclinic-cloud-customers-service:.*/\/spring-petclinic-cloud-customers-service:${{ github.sha }}/' customers-service-deployment.yaml
