@@ -112,13 +112,7 @@ jobs:
         docker push -a $REGISTRY/spring-petclinic-cloud-vets-service
         docker push -a $REGISTRY/spring-petclinic-cloud-customers-service
         docker push -a $REGISTRY/spring-petclinic-cloud-api-gateway
-
-    - name: ZAP Baseline Scan
-      uses: zaproxy/action-baseline@v0.7.0  
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}  #  When you use the repository's GITHUB_TOKEN to perform tasks, events triggered by the GITHUB_TOKEN will not create a new workflow run.
-        docker_name: 'owasp/zap2docker-stable'  # The name of the docker file to be executed. By default the action runs the stable version of ZAP. 
-        target: 'https://www.zaproxy.org' 
+ 
           
 
     - name: Run JMeter Action on a test
@@ -144,6 +138,14 @@ jobs:
       with:
          name: jmeter-results-jtl
          path: result.jtl 
+
+    - name: ZAP Baseline Scan
+      uses: zaproxy/action-baseline@v0.7.0  # Marketplace actions
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}  #  When you use the repository's GITHUB_TOKEN to perform tasks, events triggered by the GITHUB_TOKEN will not create a new workflow run.
+        docker_name: 'owasp/zap2docker-stable'  # The name of the docker file to be executed. By default the action runs the stable version of ZAP. 
+        target: 'https://www.zaproxy.org'
+
 
 
    
