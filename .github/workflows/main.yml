@@ -154,7 +154,7 @@ jobs:
     - name: PerfAction for JMeter
       uses: QAInsights/PerfAction@v3.1
       with:
-    # jmeter test plan to execute
+    # jmeter test plan to executee
          test-plan-path: jmeter.jmx
           
     - uses: actions/upload-artifact@v1
