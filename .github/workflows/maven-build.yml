@@ -191,5 +191,5 @@ jobs:
         steps: ${{ toJson(steps) }}
         channel: '#petclinic'
         config: .github/config/slack.yaml
-        message: jmeter execution Finished....
+        message: Jmeter execution Finished....
       if: always()
