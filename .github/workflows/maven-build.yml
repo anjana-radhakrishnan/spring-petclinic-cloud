@@ -112,7 +112,6 @@ jobs:
         docker push -a $REGISTRY/spring-petclinic-cloud-vets-service
         docker push -a $REGISTRY/spring-petclinic-cloud-customers-service
         docker push -a $REGISTRY/spring-petclinic-cloud-api-gateway
-
     - name: build docker image
       run: docker build -t jmeter .
     - name: run jmeter 
@@ -137,6 +136,23 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}  #  When you use the repository's GITHUB_TOKEN to perform tasks, events triggered by the GITHUB_TOKEN will not create a new workflow run.
         docker_name: 'owasp/zap2docker-stable'  # The name of the docker file to be executed. By default the action runs the stable version of ZAP. 
-        target: 'https://www.zaproxy.org' 
-     
-    
+        target: 'https://www.zaproxy.org'
+
+    - name: Audit URLs using Lighthouse
+      uses: treosh/lighthouse-ci-action@v9
+      with:
+         urls: |
+            https://cloudifyops.com/
+         budgetPath: ./budget.json # test performance budgets
+         uploadArtifacts: true # save results as an action artifacts
+         temporaryPublicStorage: true 
+         
+    - name: Slack Notification
+      uses: act10ns/slack@v1
+      with: 
+        status: ${{ job.status }}
+        steps: ${{ toJson(steps) }}
+        channel: '#petclinic'
+        config: .github/config/slack.yml
+        message: jmeter execution Finished...
+      if: always()          
