@@ -232,7 +232,7 @@ jobs:
           # Optional converting Markdown to HTML (set content_type to text/html too):
           convert_markdown: true
           # Optional attachments:
-          attachments: https://github.com/anjana-radhakrishnan/spring-petclinic-cloud/actions/runs/3262653797
+          attachments: report_html.html
           # Optional priority: 'high', 'normal' (default) or 'low'
           priority: low
    
